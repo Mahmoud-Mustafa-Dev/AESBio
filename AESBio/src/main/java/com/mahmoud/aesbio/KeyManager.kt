@@ -9,7 +9,6 @@ import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.FragmentActivity
 import java.nio.charset.Charset
 import java.security.Key
-import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -19,10 +18,10 @@ class KeyManager(
     private val fragmentActivity: FragmentActivity,
     private val listener: KeyManagerListener
 ) {
-
     private lateinit var cipherEnc: Cipher
     private lateinit var cipherDec: Cipher
     private lateinit var encryptedBytes: ByteArray
+
     private lateinit var keyAlias: String
     private lateinit var dataToEncrypt: String
 
@@ -38,6 +37,25 @@ class KeyManager(
                     cipherDec = cipher
                 }
                 decrypt()
+            }
+
+            override fun onAuthenticationError(
+                errorCode: Int,
+                errString: CharSequence
+            ) {
+            }
+
+            override fun onAuthenticationFailed() {}
+
+        }
+
+    private var callbackEnc: BiometricPrompt.AuthenticationCallback =
+        @RequiresApi(Build.VERSION_CODES.P)
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(
+                result: BiometricPrompt.AuthenticationResult
+            ) {
+                encrypt()
             }
 
             override fun onAuthenticationError(
@@ -91,7 +109,10 @@ class KeyManager(
         cipherDec = Cipher.getInstance(KeyConfigConstants.CIPHER_TRANSFORMATION)
             .apply { init(Cipher.DECRYPT_MODE, key, IvParameterSpec(cipherEnc.iv)) }
 
-        encrypt()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            initializeBiometricPromptForEnc()
+        }
+
     }
 
     private fun encrypt() {
@@ -111,8 +132,23 @@ class KeyManager(
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun initializeBiometricPromptForDec() {
+    private fun initializeBiometricPromptForEnc() {
+        val biometricPrompt =
+            BiometricPrompt(fragmentActivity, fragmentActivity.mainExecutor, callbackEnc)
 
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("We need your fingerprint to encrypt this sensitive data")
+            .setNegativeButtonText("cancel")
+            .build()
+
+        biometricPrompt.authenticate(
+            promptInfo,
+            BiometricPrompt.CryptoObject(cipherEnc)
+        )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun initializeBiometricPromptForDec() {
         val biometricPrompt =
             BiometricPrompt(fragmentActivity, fragmentActivity.mainExecutor, callbackDec)
 
