@@ -12,6 +12,7 @@ import java.security.Key
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
 class KeyManager(
@@ -75,20 +76,12 @@ class KeyManager(
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun generateKey(keySpec: KeyGenParameterSpec) {
-        KeyGenerator.getInstance(
+        val keygen = KeyGenerator.getInstance(
             KeyProperties.KEY_ALGORITHM_AES,
             KeyConfigConstants.ANDROID_KEYSTORE
         ).apply { init(keySpec) }
-        createCiphers(getKey())
-    }
-
-    private fun getKey(): Key {
-        val keystore = KeyStore.getInstance(KeyConfigConstants.ANDROID_KEYSTORE)
-            .apply { load(null) }
-        println("and key alias is: $keyAlias")
-        val key = keystore.getKey(keyAlias, null)
-        println("##### this is the key: $key")
-        return key
+        val key: SecretKey = keygen.generateKey()
+        createCiphers(key)
     }
 
     private fun createCiphers(key: Key) {
