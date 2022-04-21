@@ -41,15 +41,19 @@ dependencies {
     implementation("androidx.biometric:biometric:1.0.0-rc02")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = 'com.github.Mahmoud-Mustafa-Dev'
-                artifactId = 'AESBio'
-                version = '1.0'
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = "com.github.Mahmoud-Mustafa-Dev"
+            artifactId = "AESBio"
+            version = "1.0"
+
+            afterEvaluate {
+                from(components["release"])
             }
         }
+
     }
 }
