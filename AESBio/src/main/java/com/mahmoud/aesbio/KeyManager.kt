@@ -6,7 +6,6 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import androidx.annotation.RequiresApi
 import androidx.biometric.BiometricPrompt
-
 import androidx.fragment.app.FragmentActivity
 import java.nio.charset.Charset
 import java.security.Key
@@ -32,8 +31,6 @@ class KeyManager(
             override fun onAuthenticationSucceeded(
                 result: BiometricPrompt.AuthenticationResult
             ) {
-                // user authenticated
-                println("### user authenticated")
 
                 val cipher = result.cryptoObject?.cipher
                 if (cipher != null) {
@@ -109,7 +106,6 @@ class KeyManager(
         for (item in encryptedBytes) {
             encryptedString += item
         }
-        println("my encrypted value is: $encryptedString")
     }
 
     fun authenticateUser() {
@@ -139,7 +135,6 @@ class KeyManager(
         val unencryptedBytes = cipherDec.doFinal(encryptedBytes)
         var decryptedString = String(unencryptedBytes)
         listener.onUserAuthenticated(decryptedString)
-        println("my decrypted value is:\n $decryptedString")
     }
 
 
