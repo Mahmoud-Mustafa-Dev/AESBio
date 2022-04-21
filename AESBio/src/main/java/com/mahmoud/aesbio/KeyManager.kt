@@ -85,7 +85,10 @@ class KeyManager(
     private fun getKey(): Key {
         val keystore = KeyStore.getInstance(KeyConfigConstants.ANDROID_KEYSTORE)
             .apply { load(null) }
-        return keystore.getKey(keyAlias, null)
+        println("and key alias is: $keyAlias")
+        val key = keystore.getKey(keyAlias, null)
+        println("##### this is the key: $key")
+        return key
     }
 
     private fun createCiphers(key: Key) {
